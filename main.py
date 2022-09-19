@@ -7,8 +7,10 @@ import argparse
 from argparse import RawTextHelpFormatter
 from colorama import init, Fore
 import ast
-init(convert=True)
 
+
+
+init(convert=True)
 # COLORS
 W = Fore.RESET
 R = Fore.RED
@@ -21,7 +23,6 @@ Y = Fore.YELLOW
 YL = Fore.LIGHTYELLOW_EX
 BL = Fore.LIGHTBLUE_EX
 
-import requests
 
 
 class WebRequest():
@@ -45,7 +46,7 @@ class WebRequest():
             raise ConnectionError(res.status_code)
 
 
-class HtmlEdit():
+class WebResponse():
     def __init__(self,response) -> None:
         self.Response = response
         self.htmlContent = self.Response.text
@@ -167,11 +168,25 @@ class HtmlEdit():
 
 
     def name_tagCounter(self,tag_name,showDetails=False):
-        print(f'{YL}[+] Total "{tag_name}" tag found {len(self.soup.find_all(tag_name))}{W}')
+        foundTagcount = len(self.soup.find_all(tag_name))
+
+        print(f'{YL}[+] Total "{tag_name}" tag found {foundTagcount}{W}')
+
         if showDetails:
-            for i in self.soup.find_all(tag_name):
-                print(f"{GL}{i}{W}")
-                time.sleep(.1)
+            if foundTagcount > 50:
+                allow = input(f"{RL}[+] Show all {foundTagcount} tags? (y/N):{RL}")
+
+                if allow == "Y".lower():
+                    for i in self.soup.find_all(tag_name):
+                        print(f"{GL}{i}{W}")
+                        time.sleep(.1)
+                else:
+                    return
+
+            else:
+                for i in self.soup.find_all(tag_name):
+                    print(f"{GL}{i}{W}")
+                    time.sleep(.1)
 
 
     def getTitle(self):
@@ -253,7 +268,7 @@ def main(args):
     else:
         responsesClass = WebRequest(args.u).webResponse()
 
-    main = HtmlEdit(responsesClass)
+    main = WebResponse(responsesClass)
     # return
     if args.F:
         main.fullScan(linkMood=0 if args.l=="" else int(args.l),showDetails=True if args.all else False)
@@ -306,7 +321,7 @@ def main(args):
             print("This is a mood 4")
             main.extractLink(mood=args.l)
 
-    return "Exit..."
+    return ""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='test', formatter_class=RawTextHelpFormatter)
@@ -317,13 +332,13 @@ if __name__ == "__main__":
     parser.add_argument('--p',type=str,help="View html content" ,default=False ,nargs='?', const=True)
     parser.add_argument('--pP',type=str,help="View html content (Formatted)" ,default=False ,nargs='?', const=True)
     parser.add_argument('--F',type=str,help="Full Scan" ,default=False ,nargs='?', const=True)
-    parser.add_argument('--all',type=str,help="Show details" ,default=False,nargs='?', const=True)
+    parser.add_argument('--all',type=str,help="Show details" ,default=False,nargs='?', const="")
     parser.add_argument('--c',type=str,help="Search for comments" ,default=False ,nargs='?', const=True)
     parser.add_argument('--cS',type=str,help="Smart search for comments" ,default=False,nargs='?', const=True)
     parser.add_argument('--t',type=str,help="Get title" ,default=False ,nargs='?', const=True)
     parser.add_argument('--cT',type=str,help="Tag count" ,default=False ,nargs='?', const=True)
     parser.add_argument('--fT',type=str,help="Get Tag details" ,default=False ,nargs='?', const=True)
-    parser.add_argument('--l',type=str,help="Extract links\nMood:\n1=All href links \n2= Https/Http links \n3= Internal server links \n4= Other links \n0=Everything" ,default=False ,nargs='?', const='')
+    parser.add_argument('--l',type=str,help="Extract links\nMood:\n1= All href links \n2= Https/Http links \n3= Internal server links \n4= Other links \n0= Everything" ,default=False ,nargs='?', const='')
     parser.add_argument('--header',type=str,help="Add Headers" ,default=False)
     parser.add_argument('--params',type=str,help="Add Parameters" ,default=False)
 

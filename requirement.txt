@@ -1,0 +1,4 @@
+fake_http_header,
+BeautifulSoup,
+colorama,
+requests
